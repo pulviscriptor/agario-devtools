@@ -6,7 +6,7 @@ Node.js [agar.io](http://agar.io) developer tools for:
 - Stream your games in real time to multiple clients with `repeater.js`
 
 ## Instructions ##
-You need [Node.js](https://nodejs.org/) (i used **v0.10.21** so anything higher should work). Also you need [ws](https://www.npmjs.com/package/ws "ws") lib. You can install it using `npm install ws`. If you see error about python, its okay. Its optional dependence.
+You need [Node.js](https://nodejs.org/) (i used **v0.10.21** so anything higher should work). Also you need [ws](https://www.npmjs.com/package/ws "ws") lib. You can install it using `npm install ws`. If you see error about python, its okay. Its optional dependency.
 
 # Scripts #
 Definitions:
