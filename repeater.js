@@ -48,6 +48,7 @@ Streamer.prototype = {
         if(this.destroyed) return;
         this.destroyed = true;
         this.ws.close();
+        this.wsc.close();
         streamer = null;
 
         this.log('streamer destroyed');
