@@ -1,5 +1,5 @@
 var port = 410; //local port for connections
-var agar_server = 'ws://1.1.1.1:443'; //remote agar server
+var agar_server = ''; //default agar server, starting with ws://
 var records_path = './records/'; //where to store record files
 
 var WebSocket = require('ws');
@@ -11,9 +11,25 @@ wss.on('connection', function(wsc) {
     new Streamer(wsc);
 });
 
+//here we will try extract server from arguments
+var arg_server = '';
+process.argv.forEach(function (val) {
+    if(val.indexOf('ws://') == -1 && val.indexOf('wss://') == -1) return;
+    arg_server = val;
+});
+if(arg_server) agar_server = arg_server;
+
 console.log('agar.io recorder started');
+if(!arg_server) {
+    console.log('You can specify server like:');
+    console.log('   node recorder.js ws://1.2.3.4:443');
+}
+if(!agar_server) {
+    console.log('No server specified');
+    process.exit(0);
+}
 console.log('Open in browser http://agar.io/ and execute in console:');
-console.log('connect("ws://127.0.0.1:' + port + '/");');
+console.log('   connect("ws://127.0.0.1:' + port + '/");');
 console.log('');
 console.log('Waiting for connections...');
 

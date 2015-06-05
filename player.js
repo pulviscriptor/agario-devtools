@@ -1,10 +1,19 @@
-var log_file = './records/demo.rec'; //record to play
+var log_path = './records/'; //folder with .rec files
+var log_file = 'demo.rec'; //default record to play
 var port = 411;	//port to listen for viewers
 
 var fs = require('fs');
 var WebSocket = require('ws');
 var WebSocketServer = require('ws').Server;
 var wss = new WebSocketServer({port: port});
+
+//here we will try extract filename from arguments
+var arg_log_file = '';
+process.argv.forEach(function (val) {
+    if(val.substr(-4) != '.rec') return;
+    arg_log_file = val;
+});
+if(arg_log_file) log_file = arg_log_file;
 
 wss.on('connection', function(wsc) {
     var viewer = new Viewer(wsc);
@@ -19,15 +28,23 @@ wss.on('connection', function(wsc) {
 });
 
 console.log('agar.io player started');
+if(!arg_log_file) {
+    console.log('You can specify record like:');
+    console.log('   node player.js filename.rec');
+}
+if(!fs.existsSync(log_path + log_file)) {
+    console.log('File does not exists: ' + log_path + log_file);
+    process.exit(0);
+}
 console.log('Open in browser http://agar.io/ and execute in console:');
-console.log('connect("ws://127.0.0.1:' + port + '/");');
+console.log('   connect("ws://127.0.0.1:' + port + '/");');
 console.log('');
 console.log('Waiting for connections...');
 
 function Viewer(wsc) {
     this.abort = false;
     this.aborted = false;
-    this.stream = fs.createReadStream(log_file);
+    this.stream = fs.createReadStream(log_path + log_file);
     this.timer = 0;
     this.wsc = wsc;
     this.id = wsc.upgradeReq.connection.remoteAddress + ':' + wsc.upgradeReq.connection.remotePort;

@@ -1,6 +1,6 @@
 var viewer_port = 415; //port where all your viewers will connect
 var streamer_port = 9158; //port for streamer
-var agar_server = 'ws://1.1.1.1:443'; //remote agar server
+var agar_server = ''; //default agar server, starting with ws://
 
 var WebSocket = require('ws');
 var WebSocketServer = WebSocket.Server;
@@ -19,12 +19,28 @@ wss_viewer.on('connection', function(wsc) {
     new Viewer(wsc);
 });
 
+//here we will try extract server from arguments
+var arg_server = '';
+process.argv.forEach(function (val) {
+    if(val.indexOf('ws://') == -1 && val.indexOf('wss://') == -1) return;
+    arg_server = val;
+});
+if(arg_server) agar_server = arg_server;
+
 console.log('agar.io repeater started');
+if(!arg_server) {
+    console.log('You can specify server like:');
+    console.log('   node repeater.js ws://1.2.3.4:443');
+}
+if(!agar_server) {
+    console.log('No server specified');
+    process.exit(0);
+}
 console.log('Open in browser http://agar.io/ and execute in console:');
 console.log('For viewers:');
-console.log('connect("ws://127.0.0.1:' + viewer_port + '/");');
+console.log('   connect("ws://127.0.0.1:' + viewer_port + '/");');
 console.log('For streamer:');
-console.log('connect("ws://127.0.0.1:' + streamer_port + '/");');
+console.log('   connect("ws://127.0.0.1:' + streamer_port + '/");');
 console.log('');
 console.log('Waiting for connections...');
 
