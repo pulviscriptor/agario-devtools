@@ -8,7 +8,7 @@ var wss_viewer = new WebSocketServer({port: viewer_port});
 var wss_streamer = new WebSocketServer({port: streamer_port});
 var streamer = null;
 var viewers = [];
-var _HACK_LAST_BALL = null;
+var _last_ball_hack = null;
 
 wss_streamer.on('connection', function(wsc) {
     if(streamer) streamer.destroy();
@@ -61,8 +61,6 @@ Streamer.prototype = {
         }else{
             this.send_queue.push(buff);
         }
-
-        if(buff[0] == 32) _HACK_LAST_BALL = buff.data;
     },
 
     onStreamerClose: function() {
@@ -105,6 +103,10 @@ Streamer.prototype = {
                 if(viewer.wsc.readyState !== WebSocket.OPEN) continue;
                 viewer.wsc.send(msg.data);
             }
+
+            if(msg.data[0] == 32 || (msg.data[0] == 240 && msg.data[5] == 32) ) {
+                _last_ball_hack = msg.data;
+            }
         };
 
         this.ws.onclose = function() {
@@ -139,7 +141,7 @@ function Viewer(wsc) {
 
     this.wsc.on('message', function(buff) {
         if(buff[0] != 255) return;
-        if(_HACK_LAST_BALL) client.wsc.send(_HACK_LAST_BALL);
+        if(_last_ball_hack) client.wsc.send(_last_ball_hack);
     });
 
     this.wsc.on('close', function() {
