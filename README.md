@@ -18,8 +18,8 @@ Each script need to be configured before use:
 
 - `player.js` need **path** to `.rec` file to play and **port** to listen for viewers. Script can serve multiple viewers.
 - `recorder.js` need **path** where to store `.rec` files *and* **port** on what listen for streamers *and* [agar.io](http://agar.io) server address to connect to. **Recording will stop only when streamer is disconnected.** Script can serve multiple streamers.
-- `repeater.js` need **port** for viewers *and* **port** for streamer *and* [agar.io](http://agar.io) server address to connect to. Script can serve multiple viewers but only one streamer. New connected streamer will replace old one. **Warning:** Viewers will see gameplay only after streamer spawns*\**, so you have to connect viewers before connecting streamer either reconnect streamer or respawn it (kill all balls and spawn again).  
-*\*repeater.js have dirty hack for this, but it will work only if your last ball exists*
+- `repeater.js` need **port** for viewers *and* **port** for streamer *and* [agar.io](http://agar.io) server address to connect to. Script can serve multiple viewers but only one streamer. New connected streamer will replace old one. **Warning:** Viewers will see gameplay only after streamer spawns*, so you have to connect viewers before connecting streamer either reconnect streamer or respawn it (kill all balls and spawn again).  
+*repeater.js have dirty hack for this, but it will work only if your last ball exists
 
 ## recorder.js ##
 This script record games so you can watch it later. If you are developing a bot, you can record his games to analyze it later. Or you can record your games and then show it to bot to debug it (any input from bot will be ignored). Or even record your bot games and then show them to bot to debug logic. **Recording will stop only when streamer is disconnected**.
