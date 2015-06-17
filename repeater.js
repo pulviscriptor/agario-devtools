@@ -3,9 +3,10 @@ var WebSocket = require('ws');
 var WebSocketServer = WebSocket.Server;
 var streamer = null;
 var viewers = [];
-var _HACK_LAST_BALL = null;
+var _last_ball_hack = null;
 var wss_viewer, wss_streamer;
 misc.help(['viewer-port', 'streamer-port', 'agario-server']); //display help if requested
+
 
 var viewer_port = misc.readParam('viewer-port'); //port where all your viewers will connect
 var streamer_port = misc.readParam('streamer-port'); //port for streamer
@@ -81,8 +82,6 @@ Streamer.prototype = {
         }else{
             this.send_queue.push(buff);
         }
-
-        if(buff[0] == 32) _HACK_LAST_BALL = buff.data;
     },
 
     onStreamerClose: function() {
@@ -125,6 +124,10 @@ Streamer.prototype = {
                 if(viewer.wsc.readyState !== WebSocket.OPEN) continue;
                 viewer.wsc.send(msg.data);
             }
+
+            if(msg.data[0] == 32 || (msg.data[0] == 240 && msg.data[5] == 32) ) {
+                _last_ball_hack = msg.data;
+            }
         };
 
         this.ws.onclose = function() {
@@ -159,7 +162,7 @@ function Viewer(wsc) {
 
     this.wsc.on('message', function(buff) {
         if(buff[0] != 255) return;
-        if(_HACK_LAST_BALL) client.wsc.send(_HACK_LAST_BALL);
+        if(_last_ball_hack) client.wsc.send(_last_ball_hack);
     });
 
     this.wsc.on('close', function() {
