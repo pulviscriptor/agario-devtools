@@ -14,7 +14,7 @@ Definitions:
 - **Streamer** - thing that is connected to script and playing through it on [agar.io](http://agar.io) server. Script will send all data received from *streamer* to [agar.io](http://agar.io) server.
 - **Viewer** - thing that is connected to script and watching game. Any input from *viewer* will be ignored.
 
-Each script need to be configured before use:
+Each script can accept params, you can see them in `node <name>.js --help`:
 
 - `player.js` need **path** to `.rec` file to play and **port** to listen for viewers. Script can serve multiple viewers.
 - `recorder.js` need **path** where to store `.rec` files *and* **port** on what listen for streamers *and* [agar.io](http://agar.io) server address to connect to. **Recording will stop only when streamer is disconnected.** Script can serve multiple streamers.

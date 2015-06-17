@@ -1,48 +1,52 @@
-var viewer_port = 415; //port where all your viewers will connect
-var streamer_port = 9158; //port for streamer
-var agar_server = ''; //default agar server, starting with ws://
-
+var misc = require('./misc.js'); //miscellaneous things
 var WebSocket = require('ws');
 var WebSocketServer = WebSocket.Server;
-var wss_viewer = new WebSocketServer({port: viewer_port});
-var wss_streamer = new WebSocketServer({port: streamer_port});
 var streamer = null;
 var viewers = [];
 var _HACK_LAST_BALL = null;
+var wss_viewer, wss_streamer;
+misc.help(['viewer-port', 'streamer-port', 'agario-server']); //display help if requested
 
-wss_streamer.on('connection', function(wsc) {
-    if(streamer) streamer.destroy();
-    streamer = new Streamer(wsc);
-});
-
-wss_viewer.on('connection', function(wsc) {
-    new Viewer(wsc);
-});
-
-//here we will try extract server from arguments
-var arg_server = '';
-process.argv.forEach(function (val) {
-    if(val.indexOf('ws://') == -1 && val.indexOf('wss://') == -1) return;
-    arg_server = val;
-});
-if(arg_server) agar_server = arg_server;
+var viewer_port = misc.readParam('viewer-port'); //port where all your viewers will connect
+var streamer_port = misc.readParam('streamer-port'); //port for streamer
+var agar_server = misc.readParam('agario-server'); //agar server
 
 console.log('agar.io repeater started');
-if(!arg_server) {
-    console.log('You can specify server like:');
-    console.log('   node repeater.js ws://1.2.3.4:443');
+if(agar_server == 'auto') {
+    console.log('Requesting random server');
+    misc.getAgarioServer(function(server) {
+        agar_server = server;
+        if(server) return start();
+
+        console.log('Failed to request server! Set server manually. Use --help');
+        process.exit(0);
+    });
+}else{
+    start();
 }
-if(!agar_server) {
-    console.log('No server specified');
-    process.exit(0);
+
+function start() {
+    wss_viewer = new WebSocketServer({port: viewer_port});
+    wss_streamer = new WebSocketServer({port: streamer_port});
+
+    wss_streamer.on('connection', function(wsc) {
+        if(streamer) streamer.destroy();
+        streamer = new Streamer(wsc);
+    });
+
+    wss_viewer.on('connection', function(wsc) {
+        new Viewer(wsc);
+    });
+
+    console.log('');
+    console.log('Open in browser http://agar.io/ and execute in console:');
+    console.log('For viewers:');
+    console.log('   connect("ws://127.0.0.1:' + viewer_port + '/");');
+    console.log('For streamer:');
+    console.log('   connect("ws://127.0.0.1:' + streamer_port + '/");');
+    console.log('');
+    console.log('Waiting for connections...');
 }
-console.log('Open in browser http://agar.io/ and execute in console:');
-console.log('For viewers:');
-console.log('   connect("ws://127.0.0.1:' + viewer_port + '/");');
-console.log('For streamer:');
-console.log('   connect("ws://127.0.0.1:' + streamer_port + '/");');
-console.log('');
-console.log('Waiting for connections...');
 
 function Streamer(wsc) {
     this.wsc = wsc;

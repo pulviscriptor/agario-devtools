@@ -1,37 +1,40 @@
-var port = 410; //local port for connections
-var agar_server = ''; //default agar server, starting with ws://
-var records_path = './records/'; //where to store record files
-
+var misc = require('./misc.js'); //miscellaneous things
 var WebSocket = require('ws');
-var WebSocketServer = WebSocket.Server;
 var fs = require('fs');
-var wss = new WebSocketServer({port: port});
+var WebSocketServer = WebSocket.Server;
+var wss;
+misc.help(['streamer-port', 'path', 'agario-server']); //display help if requested
 
-wss.on('connection', function(wsc) {
-    new Streamer(wsc);
-});
-
-//here we will try extract server from arguments
-var arg_server = '';
-process.argv.forEach(function (val) {
-    if(val.indexOf('ws://') == -1 && val.indexOf('wss://') == -1) return;
-    arg_server = val;
-});
-if(arg_server) agar_server = arg_server;
+var port = misc.readParam('streamer-port'); //local port for connections
+var records_path = misc.readParam('path');  //where to store record files
+var agar_server = misc.readParam('agario-server');  //agar.io server
 
 console.log('agar.io recorder started');
-if(!arg_server) {
-    console.log('You can specify server like:');
-    console.log('   node recorder.js ws://1.2.3.4:443');
+if(agar_server == 'auto') {
+    console.log('Requesting random server');
+    misc.getAgarioServer(function(server) {
+        agar_server = server;
+        if(server) return start();
+
+        console.log('Failed to request server! Set server manually. Use --help');
+        process.exit(0);
+    });
+}else{
+    start();
 }
-if(!agar_server) {
-    console.log('No server specified');
-    process.exit(0);
+
+function start() {
+    wss = new WebSocketServer({port: port});
+
+    wss.on('connection', function(wsc) {
+        new Streamer(wsc);
+    });
+    console.log('');
+    console.log('Open in browser http://agar.io/ and execute in console:');
+    console.log('   connect("ws://127.0.0.1:' + port + '/");');
+    console.log('');
+    console.log('Waiting for connections...');
 }
-console.log('Open in browser http://agar.io/ and execute in console:');
-console.log('   connect("ws://127.0.0.1:' + port + '/");');
-console.log('');
-console.log('Waiting for connections...');
 
 function Streamer(wsc) {
     var streamer = this;
