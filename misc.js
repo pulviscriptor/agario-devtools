@@ -149,7 +149,7 @@ var misc = {
             });
             res.on('end', function() {
                 console.log('HTTP request answer: ' + server);
-                cb('ws://' + server);
+                cb('ws://' + server.split('\n')[0]);
             });
         });
 
