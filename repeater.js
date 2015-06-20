@@ -5,17 +5,17 @@ var streamer = null;
 var viewers = [];
 var _last_ball_hack = null;
 var wss_viewer, wss_streamer;
-misc.help(['viewer-port', 'streamer-port', 'agario-server']); //display help if requested
-
+misc.help(['viewer-port', 'streamer-port', 'agario-server', 'server-region']); //display help if requested
 
 var viewer_port = misc.readParam('viewer-port'); //port where all your viewers will connect
 var streamer_port = misc.readParam('streamer-port'); //port for streamer
 var agar_server = misc.readParam('agario-server'); //agar server
+var server_region = misc.readParam('server-region'); //server region
 
 console.log('agar.io repeater started');
 if(agar_server == 'auto') {
     console.log('Requesting random server');
-    misc.getAgarioServer(function(server) {
+    misc.getAgarioServer(server_region, function(server) {
         agar_server = server;
         if(server) return start();
 

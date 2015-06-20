@@ -3,16 +3,17 @@ var WebSocket = require('ws');
 var fs = require('fs');
 var WebSocketServer = WebSocket.Server;
 var wss;
-misc.help(['streamer-port', 'path', 'agario-server']); //display help if requested
+misc.help(['streamer-port', 'path', 'agario-server', 'server-region']); //display help if requested
 
 var port = misc.readParam('streamer-port'); //local port for connections
 var records_path = misc.readParam('path');  //where to store record files
 var agar_server = misc.readParam('agario-server');  //agar.io server
+var server_region = misc.readParam('server-region'); //server region
 
 console.log('agar.io recorder started');
 if(agar_server == 'auto') {
     console.log('Requesting random server');
-    misc.getAgarioServer(function(server) {
+    misc.getAgarioServer(server_region, function(server) {
         agar_server = server;
         if(server) return start();
 

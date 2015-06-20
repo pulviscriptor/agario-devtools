@@ -96,6 +96,22 @@ var misc = {
             }
         },
 
+        'server-region': {
+            region: true,
+            description: 'Server region for random server',
+            alias: [
+                '--server-region',
+                '--region',
+                '-r'
+            ],
+            default: 'random',
+            extract: function(input) {
+                if(misc.regions.indexOf(input) != -1) return input;
+
+                console.log('Warning: unsupported region, random region will be used');
+            }
+        },
+
         'force': {
             description: 'Disable inspection of param values',
             alias: [
@@ -120,8 +136,10 @@ var misc = {
         }
     },
 
-    getAgarioServer: function(cb) {
-        var region = this.regions[Math.floor(Math.random()*this.regions.length)];
+    getAgarioServer: function(region, cb) {
+        if(!region || region == 'random') {
+            region = this.regions[Math.floor(Math.random()*this.regions.length)];
+        }
 
         var options = {
             host: 'm.agar.io',
@@ -201,6 +219,12 @@ var misc = {
             console.log(' ' + param_name + ': ' + param.description);
             console.log('   ' + param.alias.join(', '));
             console.log('   Default: ' + param.default);
+            if(param.region) {
+                console.log('   Supported:');
+                for(var j=0;j<misc.regions.length;j++) {
+                    console.log('     ' + misc.regions[j]);
+                }
+            }
         }
 
         process.exit(0);
