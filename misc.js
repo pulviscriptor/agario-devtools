@@ -96,6 +96,19 @@ var misc = {
             }
         },
 
+        'server-key': {
+            description: 'Server key for manually specified server',
+            alias: [
+                '--server-key',
+                '--key',
+                '-k'
+            ],
+            default: null,
+            extract: function(input) {
+                return input;
+            }
+        },
+
         'server-region': {
             region: true,
             description: 'Server region for random server',
@@ -166,8 +179,9 @@ var misc = {
                 server += chunk;
             });
             res.on('end', function() {
+                var data = server.split('\n');
                 console.log('HTTP request answer: ' + server);
-                cb('ws://' + server.split('\n')[0]);
+                cb('ws://' + data[0], data[1]);
             });
         });
 

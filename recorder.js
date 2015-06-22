@@ -3,18 +3,20 @@ var WebSocket = require('ws');
 var fs = require('fs');
 var WebSocketServer = WebSocket.Server;
 var wss;
-misc.help(['streamer-port', 'path', 'agario-server', 'server-region']); //display help if requested
+misc.help(['streamer-port', 'path', 'agario-server', 'server-key', 'server-region']); //display help if requested
 
 var port = misc.readParam('streamer-port'); //local port for connections
 var records_path = misc.readParam('path');  //where to store record files
 var agar_server = misc.readParam('agario-server');  //agar.io server
+var server_key = misc.readParam('server-key');  //server key
 var server_region = misc.readParam('server-region'); //server region
 
 console.log('agar.io recorder started');
 if(agar_server == 'random') {
     console.log('Requesting random server');
-    misc.getAgarioServer(server_region, function(server) {
+    misc.getAgarioServer(server_region, function(server, key) {
         agar_server = server;
+        server_key = key;
         if(server) return start();
 
         console.log('Failed to request server! Set server manually. Use --help');
@@ -33,7 +35,7 @@ function start() {
     });
     console.log('');
     console.log('Open in browser http://agar.io/ and execute in console:');
-    console.log('   connect("ws://127.0.0.1:' + port + '/");');
+    console.log('   connect("ws://127.0.0.1:' + port + '/","");');
     console.log('');
     console.log('Waiting for connections...');
 }
@@ -56,7 +58,7 @@ function Streamer(wsc) {
     this.log('Streamer connected to recorder');
     this.openFileStream(function() {
         streamer.log('Recorder connecting to ' + agar_server);
-        streamer.connectToAgar(agar_server);
+        streamer.connectToAgar(agar_server, server_key);
     });
 }
 
@@ -76,6 +78,10 @@ Streamer.prototype = {
         this.wsc.on('message', function(buff) {
             if(streamer.agony) return;
             if(buff[0] == 0) streamer.tryNewFilename(buff);
+            //ignore initial packets, we will emulate them
+            if(buff[0] == 255) return;
+            if(buff[0] == 254) return;
+            if(buff[0] == 80) return;
 
             if(streamer.ws && streamer.ws.readyState === WebSocket.OPEN) {
                 streamer.ws.send(buff);
@@ -121,7 +127,7 @@ Streamer.prototype = {
         this.rename = filename;
     },
 
-    connectToAgar: function(server) {
+    connectToAgar: function(server, key) {
         var streamer = this;
 
         var headers = {
@@ -132,8 +138,40 @@ Streamer.prototype = {
         this.ws.onopen = function() {
             if(streamer.agony) streamer.ws.close();
             streamer.log('Recorder connected to agar');
-            for(var i=0;i<streamer.send_queue.length;i++) {
-               streamer.ws.send(streamer.send_queue[i]);
+
+            //initialization emulation start
+            var buf = new Buffer(5);
+            buf.writeUInt8(254, 0);
+            buf.writeUInt32LE(4, 1);
+            streamer.ws.send(buf);
+
+            buf = new Buffer(5);
+            buf.writeUInt8(255, 0);
+            buf.writeUInt32LE(673720361, 1);
+            streamer.ws.send(buf);
+
+            if(key) {
+                buf = new Buffer(1 + key.length);
+                buf.writeUInt8(80, 0);
+                for (var i=1;i<=key.length;++i) {
+                    buf.writeUInt8(key.charCodeAt(i-1), i);
+                }
+                this.send(buf);
+            }
+            //initialization emulation end
+
+            for(var j=0;j<streamer.send_queue.length;j++) {
+                var packet = streamer.send_queue[j];
+                //if this is spawn packet, then wait 2000ms or server will ignore us
+                if(packet[0] == 0) {
+                    (function(packet){
+                        setTimeout(function(){
+                            streamer.ws.send(packet);
+                        },2000);
+                    })(packet);
+                }else{
+                    streamer.ws.send(packet);
+                }
             }
             streamer.send_queue = [];
         };

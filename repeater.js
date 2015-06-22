@@ -5,18 +5,20 @@ var streamer = null;
 var viewers = [];
 var _last_ball_hack = null;
 var wss_viewer, wss_streamer;
-misc.help(['viewer-port', 'streamer-port', 'agario-server', 'server-region']); //display help if requested
+misc.help(['viewer-port', 'streamer-port', 'agario-server', 'server-key', 'server-region']); //display help if requested
 
 var viewer_port = misc.readParam('viewer-port'); //port where all your viewers will connect
 var streamer_port = misc.readParam('streamer-port'); //port for streamer
 var agar_server = misc.readParam('agario-server'); //agar server
+var server_key = misc.readParam('server-key');  //server key
 var server_region = misc.readParam('server-region'); //server region
 
 console.log('agar.io repeater started');
 if(agar_server == 'random') {
     console.log('Requesting random server');
-    misc.getAgarioServer(server_region, function(server) {
+    misc.getAgarioServer(server_region, function(server, key) {
         agar_server = server;
+        server_key = key;
         if(server) return start();
 
         console.log('Failed to request server! Set server manually. Use --help');
@@ -43,9 +45,9 @@ function start() {
     console.log('');
     console.log('Open in browser http://agar.io/ and execute in console:');
     console.log('For viewers:');
-    console.log('   connect("ws://127.0.0.1:' + viewer_port + '/");');
+    console.log('   connect("ws://127.0.0.1:' + viewer_port + '/","");');
     console.log('For streamer:');
-    console.log('   connect("ws://127.0.0.1:' + streamer_port + '/");');
+    console.log('   connect("ws://127.0.0.1:' + streamer_port + '/","");');
     console.log('');
     console.log('Waiting for connections...');
 }
@@ -78,6 +80,10 @@ Streamer.prototype = {
 
     onStreamerMessage: function(buff) {
         if(this.destroyed) return;
+        //ignore initial packets, we will emulate them
+        if(buff[0] == 255) return;
+        if(buff[0] == 254) return;
+        if(buff[0] == 80) return;
         if(this.ws && this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(buff);
         }else{
@@ -106,8 +112,40 @@ Streamer.prototype = {
         this.ws.onopen = function() {
             if(streamer.destroyed) return streamer.ws.close();
             streamer.log('Repeater conencted to agar');
-            for(var i=0;i<streamer.send_queue.length;i++) {
-                streamer.ws.send(streamer.send_queue[i]);
+
+            //initialization emulation start
+            var buf = new Buffer(5);
+            buf.writeUInt8(254, 0);
+            buf.writeUInt32LE(4, 1);
+            streamer.ws.send(buf);
+
+            buf = new Buffer(5);
+            buf.writeUInt8(255, 0);
+            buf.writeUInt32LE(673720361, 1);
+            streamer.ws.send(buf);
+
+            if(server_key) {
+                buf = new Buffer(1 + server_key.length);
+                buf.writeUInt8(80, 0);
+                for (var i=1;i<=server_key.length;++i) {
+                    buf.writeUInt8(server_key.charCodeAt(i-1), i);
+                }
+                this.send(buf);
+            }
+            //initialization emulation end
+
+            for(var j=0;j<streamer.send_queue.length;j++) {
+                var packet = streamer.send_queue[j];
+                //if this is spawn packet, then wait 2000ms or server will ignore us
+                if(packet[0] == 0) {
+                    (function(packet){
+                        setTimeout(function(){
+                            streamer.ws.send(packet);
+                        },2000);
+                    })(packet);
+                }else{
+                    streamer.ws.send(packet);
+                }
             }
             streamer.send_queue = [];
         };

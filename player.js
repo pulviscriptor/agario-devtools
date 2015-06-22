@@ -30,7 +30,7 @@ if(!fs.existsSync(log_path + log_file)) {
 }
 console.log('');
 console.log('Open in browser http://agar.io/ and execute in console:');
-console.log('   connect("ws://127.0.0.1:' + port + '/");');
+console.log('   connect("ws://127.0.0.1:' + port + '/","");');
 console.log('');
 console.log('Waiting for connections...');
 
