@@ -23,6 +23,7 @@ if(agar_server == 'auto') {
         process.exit(0);
     });
 }else{
+    if(!server_key) console.log('[Warning] You did not set server key, server may ignore/disconnect you');
     start();
 }
 

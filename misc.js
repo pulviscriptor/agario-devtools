@@ -29,7 +29,7 @@ var misc = {
                 var int = parseInt(input);
                 if(int && int <= 65535) return int;
 
-                console.log('Warning: streamer port must be 1-65535, port ' + this.default + ' will be used');
+                console.log('[Warning] Streamer port must be 1-65535, port ' + this.default + ' will be used');
             }
         },
 
@@ -45,7 +45,7 @@ var misc = {
                 var int = parseInt(input);
                 if(int && int <= 65535) return int;
 
-                console.log('Warning: viewer port must be 1-65535, port ' + this.default + ' will be used');
+                console.log('[Warning] Viewer port must be 1-65535, port ' + this.default + ' will be used');
             }
         },
 
@@ -59,7 +59,7 @@ var misc = {
             extract: function(input) {
                 if(fs.existsSync(input)) return input;
 
-                console.log('Warning: path don\'t exists, ' + this.default + ' will be used');
+                console.log('[Warning] Path don\'t exists, ' + this.default + ' will be used');
             }
         },
 
@@ -74,7 +74,7 @@ var misc = {
             extract: function(input) {
                 if(input.substr(-4) == '.rec') return input;
 
-                console.log('Warning: filename must have .rec at the end, ' + this.default + ' will be used');
+                console.log('[Warning] Filename must have .rec at the end, ' + this.default + ' will be used');
             }
         },
 
@@ -92,7 +92,7 @@ var misc = {
                 if(input.substr(0,5) == 'ws://') return input;
                 if(input.substr(0,6) == 'wss://') return input;
 
-                console.log('Warning: server must start with ws://, ' + this.default + ' will be used');
+                console.log('[Warning] Server must start with ws://, ' + this.default + ' will be used');
             }
         },
 
@@ -108,7 +108,7 @@ var misc = {
             extract: function(input) {
                 if(misc.regions.indexOf(input) != -1) return input;
 
-                console.log('Warning: unsupported region, random region will be used');
+                console.log('[Warning] Unsupported region, random region will be used');
             }
         },
 
