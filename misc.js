@@ -79,16 +79,16 @@ var misc = {
         },
 
         'agario-server': {
-            description: 'Agar.io\'s server, starting with ws:// (auto = get random server)',
+            description: 'Agar.io\'s server, starting with ws:// (random = get random server)',
             alias: [
                 '--agario-server',
                 '--agar-server',
                 '--server',
                 '-a'
             ],
-            default: 'auto',
+            default: 'random',
             extract: function(input) {
-                if(input == 'auto') return input;
+                if(input == 'random') return input;
                 if(input.substr(0,5) == 'ws://') return input;
                 if(input.substr(0,6) == 'wss://') return input;
 

@@ -13,7 +13,7 @@ var agar_server = misc.readParam('agario-server'); //agar server
 var server_region = misc.readParam('server-region'); //server region
 
 console.log('agar.io repeater started');
-if(agar_server == 'auto') {
+if(agar_server == 'random') {
     console.log('Requesting random server');
     misc.getAgarioServer(server_region, function(server) {
         agar_server = server;
