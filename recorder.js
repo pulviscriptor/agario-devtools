@@ -147,7 +147,7 @@ Streamer.prototype = {
 
             buf = new Buffer(5);
             buf.writeUInt8(255, 0);
-            buf.writeUInt32LE(673720361, 1);
+            buf.writeUInt32LE(2207389747, 1);
             streamer.ws.send(buf);
 
             if(key) {
