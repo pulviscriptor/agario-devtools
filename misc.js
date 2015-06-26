@@ -170,7 +170,7 @@ var misc = {
         var req = http.request(options, function(res) {
             var server = '';
             if(res.statusCode != 200) {
-                console.log('HTTP request status code: ' + res.statusCode);
+                //console.log('HTTP request status code: ' + res.statusCode);
                 return cb();
             }
             res.setEncoding('utf8');
@@ -180,13 +180,13 @@ var misc = {
             });
             res.on('end', function() {
                 var data = server.split('\n');
-                console.log('HTTP request answer: ' + server);
+                //console.log('HTTP request answer: ' + server);
                 cb('ws://' + data[0], data[1]);
             });
         });
 
         req.on('error', function(e) {
-            console.log('HTTP request error: ' + e.message);
+            //console.log('HTTP request error: ' + e.message);
             return cb();
         });
 

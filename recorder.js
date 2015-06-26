@@ -11,34 +11,21 @@ var agar_server = misc.readParam('agario-server');  //agar.io server
 var server_key = misc.readParam('server-key');  //server key
 var server_region = misc.readParam('server-region'); //server region
 
+wss = new WebSocketServer({port: port});
+
+wss.on('connection', function(wsc) {
+    new Streamer(wsc);
+});
+
 console.log('agar.io recorder started');
-if(agar_server == 'random') {
-    console.log('Requesting random server');
-    misc.getAgarioServer(server_region, function(server, key) {
-        agar_server = server;
-        server_key = key;
-        if(server) return start();
+if(agar_server != 'random' && !server_key)
+    console.log('[Warning] You did not set server key, server may ignore/disconnect you');
+console.log('');
+console.log('Open in browser http://agar.io/ and execute in console:');
+console.log('   connect("ws://127.0.0.1:' + port + '/","");');
+console.log('');
+console.log('Waiting for connections...');
 
-        console.log('Failed to request server! Set server manually. Use --help');
-        process.exit(0);
-    });
-}else{
-    if(!server_key) console.log('[Warning] You did not set server key, server may ignore/disconnect you');
-    start();
-}
-
-function start() {
-    wss = new WebSocketServer({port: port});
-
-    wss.on('connection', function(wsc) {
-        new Streamer(wsc);
-    });
-    console.log('');
-    console.log('Open in browser http://agar.io/ and execute in console:');
-    console.log('   connect("ws://127.0.0.1:' + port + '/","");');
-    console.log('');
-    console.log('Waiting for connections...');
-}
 
 function Streamer(wsc) {
     var streamer = this;
@@ -57,8 +44,7 @@ function Streamer(wsc) {
 
     this.log('Streamer connected to recorder');
     this.openFileStream(function() {
-        streamer.log('Recorder connecting to ' + agar_server);
-        streamer.connectToAgar(agar_server, server_key);
+        streamer.prepareServer();
     });
 }
 
@@ -127,8 +113,27 @@ Streamer.prototype = {
         this.rename = filename;
     },
 
+    prepareServer: function() {
+        var streamer = this;
+        if(agar_server == 'random') {
+            streamer.log('Requesting random server');
+            misc.getAgarioServer(server_region, function(server, key) {
+                if(server) {
+                    streamer.log('Got server ' + server + ' with key ' + key);
+                    return streamer.connectToAgar(server, key);
+                }
+
+                streamer.log('Failed to request server!');
+                streamer.destroy();
+            });
+        }else{
+            this.connectToAgar(agar_server, server_key);
+        }
+    },
+
     connectToAgar: function(server, key) {
         var streamer = this;
+        this.log('Connecting to agar');
 
         var headers = {
             'Origin': 'http://agar.io'

@@ -13,44 +13,30 @@ var agar_server = misc.readParam('agario-server'); //agar server
 var server_key = misc.readParam('server-key');  //server key
 var server_region = misc.readParam('server-region'); //server region
 
+wss_viewer = new WebSocketServer({port: viewer_port});
+wss_streamer = new WebSocketServer({port: streamer_port});
+
+wss_streamer.on('connection', function(wsc) {
+    if(streamer) streamer.destroy();
+    streamer = new Streamer(wsc);
+});
+
+wss_viewer.on('connection', function(wsc) {
+    new Viewer(wsc);
+});
+
 console.log('agar.io repeater started');
-if(agar_server == 'random') {
-    console.log('Requesting random server');
-    misc.getAgarioServer(server_region, function(server, key) {
-        agar_server = server;
-        server_key = key;
-        if(server) return start();
+if(agar_server != 'random' && !server_key)
+    console.log('[Warning] You did not set server key, server may ignore/disconnect you');
+console.log('');
+console.log('Open in browser http://agar.io/ and execute in console:');
+console.log('For viewers:');
+console.log('   connect("ws://127.0.0.1:' + viewer_port + '/","");');
+console.log('For streamer:');
+console.log('   connect("ws://127.0.0.1:' + streamer_port + '/","");');
+console.log('');
+console.log('Waiting for connections...');
 
-        console.log('Failed to request server! Set server manually. Use --help');
-        process.exit(0);
-    });
-}else{
-    if(!server_key) console.log('[Warning] You did not set server key, server may ignore/disconnect you');
-    start();
-}
-
-function start() {
-    wss_viewer = new WebSocketServer({port: viewer_port});
-    wss_streamer = new WebSocketServer({port: streamer_port});
-
-    wss_streamer.on('connection', function(wsc) {
-        if(streamer) streamer.destroy();
-        streamer = new Streamer(wsc);
-    });
-
-    wss_viewer.on('connection', function(wsc) {
-        new Viewer(wsc);
-    });
-
-    console.log('');
-    console.log('Open in browser http://agar.io/ and execute in console:');
-    console.log('For viewers:');
-    console.log('   connect("ws://127.0.0.1:' + viewer_port + '/","");');
-    console.log('For streamer:');
-    console.log('   connect("ws://127.0.0.1:' + streamer_port + '/","");');
-    console.log('');
-    console.log('Waiting for connections...');
-}
 
 function Streamer(wsc) {
     this.wsc = wsc;
@@ -58,13 +44,13 @@ function Streamer(wsc) {
     this.send_queue = [];
     this.destroyed = false;
     streamer = this;
-    this.log('streamer connected');
+    this.log('Streamer connected');
 
     this.wsc.on('message', this.onStreamerMessage.bind(this));
     this.wsc.on('close', this.onStreamerClose.bind(this));
     this.wsc.on('error', this.onStreamerError.bind(this));
 
-    this.connectToAgar();
+    this.prepareServer();
 }
 
 Streamer.prototype = {
@@ -75,7 +61,7 @@ Streamer.prototype = {
         this.wsc.close();
         streamer = null;
 
-        this.log('streamer destroyed');
+        this.log('Streamer destroyed');
     },
 
     onStreamerMessage: function(buff) {
@@ -93,19 +79,37 @@ Streamer.prototype = {
 
     onStreamerClose: function() {
         if(this.destroyed) return;
-        this.log('streamer disconnected');
+        this.log('Streamer disconnected');
         this.destroy();
     },
 
     onStreamerError: function(e) {
         if(this.destroyed) return;
-        this.log('streamer connection error: ' + e);
+        this.log('Streamer connection error: ' + e);
         this.destroy();
     },
 
-    connectToAgar: function() {
+    prepareServer: function() {
         var streamer = this;
-        this.log('connecting to agar');
+        if(agar_server == 'random') {
+            streamer.log('Requesting random server');
+            misc.getAgarioServer(server_region, function(server, key) {
+                if(server) {
+                    streamer.log('Got server ' + server + ' with key ' + key);
+                    return streamer.connectToAgar(server, key);
+                }
+
+                streamer.log('Failed to request server!');
+                streamer.destroy();
+            });
+        }else{
+            this.connectToAgar(agar_server, server_key);
+        }
+    },
+
+    connectToAgar: function(agar_server, server_key) {
+        var streamer = this;
+        this.log('Connecting to agar');
 
         this.ws = new WebSocket(agar_server, null, {headers: {'Origin': 'http://agar.io'}});
 
@@ -170,12 +174,12 @@ Streamer.prototype = {
         };
 
         this.ws.onclose = function() {
-            streamer.log('agar closed connection');
+            streamer.log('Agar closed connection');
             streamer.destroy();
         };
 
         this.ws.onerror = function(e) {
-            streamer.log('agar connection error: ' + e);
+            streamer.log('Agar connection error: ' + e);
             streamer.destroy();
         };
     },
@@ -197,7 +201,7 @@ function Viewer(wsc) {
     var client = this;
     viewers.push(this);
 
-    this.log('connected');
+    this.log('Connected');
 
     this.wsc.on('message', function(buff) {
         if(buff[0] != 255) return;
@@ -220,7 +224,7 @@ Viewer.prototype = {
             viewers.splice(i, 1);
             break;
         }
-        this.log('disconnected');
+        this.log('Disconnected');
     },
 
     log: function(msg) {
