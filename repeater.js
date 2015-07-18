@@ -120,7 +120,7 @@ Streamer.prototype = {
             //initialization emulation start
             var buf = new Buffer(5);
             buf.writeUInt8(254, 0);
-            buf.writeUInt32LE(4, 1);
+            buf.writeUInt32LE(5, 1);
             streamer.ws.send(buf);
 
             buf = new Buffer(5);
