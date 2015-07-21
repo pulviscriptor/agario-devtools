@@ -12,8 +12,7 @@ var misc = {
         "RU-Russia",
         "SG-Singapore",
         "TK-Turkey",
-        "US-Atlanta",
-        "US-Fremont"
+        "US-Atlanta"
     ],
 
     params: {
