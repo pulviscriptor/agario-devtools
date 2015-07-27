@@ -123,7 +123,7 @@ var misc = {
                 '--region',
                 '-r'
             ],
-            default: 'random',
+            default: 'EU-London',
             extract: function(input) {
                 if(misc.regions.indexOf(input) != -1) return input;
 
