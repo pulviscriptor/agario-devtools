@@ -1,15 +1,17 @@
 var misc = require('./misc.js'); //miscellaneous things
+var servers = require('./servers.js');
 var WebSocket = require('ws');
 var fs = require('fs');
 var WebSocketServer = WebSocket.Server;
 var wss;
-misc.help(['streamer-port', 'path', 'agario-server', 'server-key', 'server-region']); //display help if requested
+misc.help(['streamer-port', 'path', 'agario-server', 'server-key', 'server-region', 'server-type']); //display help if requested
 
 var port = misc.readParam('streamer-port'); //local port for connections
 var records_path = misc.readParam('path');  //where to store record files
 var agar_server = misc.readParam('agario-server');  //agar.io server
 var server_key = misc.readParam('server-key');  //server key
 var server_region = misc.readParam('server-region'); //server region
+var server_type = misc.readParam('server-type'); //server type
 
 wss = new WebSocketServer({port: port});
 
@@ -116,15 +118,35 @@ Streamer.prototype = {
     prepareServer: function() {
         var streamer = this;
         if(agar_server == 'random') {
-            streamer.log('Requesting random server');
-            misc.getAgarioServer(server_region, function(server, key) {
-                if(server) {
-                    streamer.log('Got server ' + server + ' with key ' + key);
-                    return streamer.connectToAgar(server, key);
+            var opt = {
+                region: server_region
+            };
+            var getAgarioServer;
+
+            if(server_type == 'teams') {
+                getAgarioServer = servers.getTeamsServer.bind(servers);
+            }else if(server_type == 'experimental') {
+                getAgarioServer = servers.getExperimentalServer.bind(servers);
+            }else if(server_type == 'party') {
+                if(server_key) {
+                    opt.party_key = server_key;
+                    getAgarioServer = servers.getPartyServer.bind(servers);
+                }else{
+                    getAgarioServer = servers.createParty.bind(servers);
+                }
+            }else{ //FFA
+                getAgarioServer = servers.getFFAServer.bind(servers);
+            }
+
+            streamer.log('Requesting ' + server_type  + ' server');
+            getAgarioServer(opt, function(srv) {
+                if(srv.server) {
+                    streamer.log('Got server ' + srv.server + ' with key ' + srv.key);
+                    return streamer.connectToAgar('ws://' + srv.server, srv.key);
                 }
 
-                streamer.log('Failed to request server!');
-                streamer.destroy();
+                streamer.log('Failed to request server (error=' + srv.error + ', error_source=' + srv.error_source + ')');
+                //streamer.destroy();
             });
         }else{
             this.connectToAgar(agar_server, server_key);
@@ -152,7 +174,7 @@ Streamer.prototype = {
 
             buf = new Buffer(5);
             buf.writeUInt8(255, 0);
-            buf.writeUInt32LE(154669603, 1);
+            buf.writeUInt32LE(servers.init_key, 1);
             streamer.ws.send(buf);
 
             if(key) {

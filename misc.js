@@ -15,6 +15,13 @@ var misc = {
         "US-Atlanta"
     ],
 
+    server_types: [
+        "FFA",
+        "teams",
+        "experimental",
+        "party"
+    ],
+
     params: {
         'streamer-port': {
             description: 'Port for streamer',
@@ -124,6 +131,22 @@ var misc = {
             }
         },
 
+        'server-type': {
+            server_type: true,
+            description: 'Server type',
+            alias: [
+                '--server-type',
+                '--type',
+                '-t'
+            ],
+            default: 'FFA',
+            extract: function(input) {
+                if(misc.server_types.indexOf(input) != -1) return input;
+
+                console.log('[Warning] Unsupported region, random region will be used');
+            }
+        },
+
         'force': {
             description: 'Disable inspection of param values',
             alias: [
@@ -146,51 +169,6 @@ var misc = {
                 return input;
             }
         }
-    },
-
-    getAgarioServer: function(region, cb) {
-        if(!region || region == 'random') {
-            region = this.regions[Math.floor(Math.random()*this.regions.length)];
-        }
-
-        var options = {
-            host: 'm.agar.io',
-            port: 80,
-            path: '/',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Content-Length': region.length,
-                'Origin': 'http://agar.io',
-                'Referer': 'http://agar.io/'
-            }
-        };
-
-        var req = http.request(options, function(res) {
-            var server = '';
-            if(res.statusCode != 200) {
-                //console.log('HTTP request status code: ' + res.statusCode);
-                return cb();
-            }
-            res.setEncoding('utf8');
-
-            res.on('data', function (chunk) {
-                server += chunk;
-            });
-            res.on('end', function() {
-                var data = server.split('\n');
-                //console.log('HTTP request answer: ' + server);
-                cb('ws://' + data[0], data[1]);
-            });
-        });
-
-        req.on('error', function(e) {
-            //console.log('HTTP request error: ' + e.message);
-            return cb();
-        });
-
-        req.write(region);
-        req.end();
     },
 
     exists: function(name) {
@@ -237,6 +215,14 @@ var misc = {
                 for(var j=0;j<misc.regions.length;j++) {
                     console.log('     ' + misc.regions[j]);
                 }
+            }
+            if(param.server_type) {
+                console.log('   Supported:');
+                for(var k=0;k<misc.server_types.length;k++) {
+                    console.log('     ' + misc.server_types[k]);
+                }
+                console.log('   If you use "party" then add "--server-key=PARTY_KEY" to connect to existing party');
+                console.log('   Otherwise new/random party will be created/used');
             }
         }
 
