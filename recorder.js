@@ -268,6 +268,6 @@ Streamer.prototype = {
         this.log('Finishing: ' + reason);
 
         this.agony = true;
-        this.ws.close();
+        if(this.ws) this.ws.close();
     }
 };
