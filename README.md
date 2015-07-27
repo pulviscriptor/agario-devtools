@@ -33,6 +33,17 @@ This script plays recorded games. You can connect to it with web browser and wat
 ## repeater.js ##
 This script receives data from streamer and sends it to [agar.io](http://agar.io) server. Received data from [agar.io](http://agar.io) server is sent to all viewers, connected to repeater. So if you are developing a bot with [agario-client](https://github.com/pulviscriptor/agario-client), you can watch through web browser in real time what your bot is doing on [agar.io](http://agar.io) server.
 
+# Examples #
+    node player.js --help #display help
+	node player.js #play demo.rec on default port
+    node player.js --file record.rec --viewer-port 7777 #play file record.rec on port 7777
+	node recorder.js #record gameplay on any server in default region
+    node recorder.js --region EU-London --server-type experimental #record gameplay for random experimental server in EU-London
+	node recorder.js --region ZZ-Unsupported --force #ignore supported regions list and use "ZZ-Unsupported" region
+	node repeater.js --server-type party --region EU-London #connect/create random party in EU-London
+	node repeater.js --server-type party --server-key XY9BU #connect to party XY9BU
+    node repeater.js #connect to any server in default region
+
 # ProTips #
 Almost every update of [agar.io](http://agar.io) breaks something new for devtools. 
 - Connecting to streamer as viewer after streamer is spawned makes no sense anymore. So first connect your viewer then connect streamer. 
