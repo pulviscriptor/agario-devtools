@@ -33,5 +33,14 @@ This script plays recorded games. You can connect to it with web browser and wat
 ## repeater.js ##
 This script receives data from streamer and sends it to [agar.io](http://agar.io) server. Received data from [agar.io](http://agar.io) server is sent to all viewers, connected to repeater. So if you are developing a bot with [agario-client](https://github.com/pulviscriptor/agario-client), you can watch through web browser in real time what your bot is doing on [agar.io](http://agar.io) server.
 
+# ProTips #
+Almost every update of [agar.io](http://agar.io) breaks something new for devtools. 
+- Connecting to streamer as viewer after streamer is spawned makes no sense anymore. So first connect your viewer then connect streamer. 
+- If you have gray overlay after you connect in browser as viewer, you can use dirty hack:  
+`setInterval(function(){$('.btn-play').click()},1000);`  
+Don't be afraid to flood server. Any data from viewer ignored by player/repeater.
+ 
+If you have more tips, feel free to pull request it here.
+
 # Feedback #
 If something is broken, please [email me](mailto:pulviscriptor@gmail.com) or [create issue](https://github.com/pulviscriptor/agario-devtools/issues/new). I will not know that something is broken until somebody will tell me that.
