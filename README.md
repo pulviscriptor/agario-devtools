@@ -50,6 +50,8 @@ Almost every update of [agar.io](http://agar.io) breaks something new for devtoo
 - If you have gray overlay after you connect in browser as viewer, you can use dirty hack:  
 `setInterval(function(){$('.btn-play').click()},1000);`  
 Don't be afraid to flood server. Any data from viewer ignored by player/repeater.
+- If you don't see any balls after connection to player, try to add `setNick('');` after `connect()`. For example: `connect("ws://127.0.0.1:1400/","");setNick('');`
+- If you don't see any balls after connection to recorder/repeater, try to refresh page and enter nick only after connection. Or try `setNick('nickname');` like with player.
  
 If you have more tips, feel free to pull request it here.
 
