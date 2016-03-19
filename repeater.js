@@ -137,7 +137,7 @@ Streamer.prototype = {
 
         this.ws.onopen = function() {
             if(streamer.destroyed) return streamer.ws.close();
-            streamer.log('Repeater conencted to agar');
+            streamer.log('Repeater connected to agar');
 
             //initialization emulation start
             var buf = new Buffer(5);
@@ -156,7 +156,7 @@ Streamer.prototype = {
                 for (var i=1;i<=server_key.length;++i) {
                     buf.writeUInt8(server_key.charCodeAt(i-1), i);
                 }
-                this.send(buf);
+                streamer.ws.send(buf);
             }
             //initialization emulation end
 
