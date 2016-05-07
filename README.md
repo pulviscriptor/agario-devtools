@@ -5,6 +5,10 @@ Node.js [agar.io](http://agar.io) developer tools for:
 - Recording your games by playing through recorder server to watch it later by `player.js`
 - Streaming your games in real time to multiple clients with `repeater.js`
 
+# Outdated! #
+Agar developers made completely new code for game, `agario-devtools` will not work anymore. 
+Check `agario-client` [changelog](//github.com/pulviscriptor/agario-client/blob/master/CHANGELOG.md) for more info.
+
 ## Instructions ##
 You need [Node.js](https://nodejs.org/) (i used **v0.10.21** so anything higher should work). Also you need [ws](https://www.npmjs.com/package/ws "ws") lib. You can install it using `npm install ws`. If you see error about python, its okay. Its optional dependency.
 
